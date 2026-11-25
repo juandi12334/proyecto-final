@@ -1,0 +1,3 @@
+# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+# development assistant to help write this file.
+Flask>=3.0,<4.0

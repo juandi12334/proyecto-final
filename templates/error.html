@@ -1,0 +1,15 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Friendly page for HTTP errors (400, 404, 405, 500...). #}
+{% extends "layout.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Error {{ code }}{% endblock %}
+
+{% block main %}
+<section class="card error-page">
+  <p class="error-code">{{ code }}</p>
+  <h1>{{ name }}</h1>
+  <p>{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}">{{ ui.icon("board", "Volver al tablero") }}</a>
+</section>
+{% endblock %}

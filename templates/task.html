@@ -1,0 +1,125 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Task detail: information, quick status change, focus timer, manual log
+   form and the history of focus sessions. #}
+{% extends "layout.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}{{ task.title }}{% endblock %}
+
+{% block main %}
+<a class="back" href="{{ url_for('index') }}">{{ ui.icon("back", "Tablero") }}</a>
+{% set due_label, due_class = due_info(task.due_date, task.status) %}
+
+<div class="detail">
+  <section class="card detail-main">
+    <div class="detail-head">
+      <h1 class="task-heading">{{ task.title }}</h1>
+      <div class="detail-actions">
+        <a class="btn btn-sm" href="{{ url_for('task_edit', task_id=task.id) }}">{{ ui.icon("edit", "Editar") }}</a>
+        <form method="post" action="{{ url_for('task_delete', task_id=task.id) }}"
+              data-confirm="¿Eliminar esta tarea y todas sus sesiones de enfoque?">
+          <button class="btn btn-sm btn-danger" type="submit">{{ ui.icon("trash", "Eliminar") }}</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="task-meta">
+      {{ ui.project_chip(task.project_name, task.project_color) }}
+      {{ ui.priority_badge(task.priority) }}
+      <span class="badge status-{{ task.status }}">{{ STATUSES[task.status] }}</span>
+      {% if due_label %}<span class="badge badge-due {{ due_class }}">{{ ui.icon("calendar") }}{{ due_label }}</span>{% endif %}
+    </div>
+
+    {% if task.description %}
+    <p class="description">{{ task.description }}</p>
+    {% else %}
+    <p class="description muted">Sin descripción.</p>
+    {% endif %}
+
+    <form class="quick quick-inline" method="post" action="{{ url_for('task_quick_update', task_id=task.id) }}">
+      <input type="hidden" name="next" value="{{ url_for('task_detail', task_id=task.id) }}">
+      <label class="filter"><span>Estado</span>
+        <select name="status">
+          {% for value, text in STATUSES.items() %}
+          <option value="{{ value }}" {{ 'selected' if task.status == value }}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="filter"><span>Prioridad</span>
+        <select name="priority">
+          {% for value, text in PRIORITIES.items() %}
+          <option value="{{ value }}" {{ 'selected' if task.priority == value }}>{{ text }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="btn btn-sm" type="submit">{{ ui.icon("save", "Actualizar") }}</button>
+    </form>
+
+    <dl class="facts">
+      <div><dt>Enfoque acumulado</dt><dd>{{ task.focus_minutes|minutes }}</dd></div>
+      <div><dt>Estimación</dt><dd>{{ task.estimate_minutes|minutes if task.estimate_minutes else "—" }}</dd></div>
+      <div><dt>Creada</dt><dd>{{ task.created_at[:16] }}</dd></div>
+      <div><dt>Actualizada</dt><dd>{{ task.updated_at[:16] }}</dd></div>
+      {% if task.completed_at %}<div><dt>Completada</dt><dd>{{ task.completed_at[:16] }}</dd></div>{% endif %}
+    </dl>
+
+    {% if progress is not none %}
+    <div class="progress" role="progressbar" aria-label="Enfoque respecto a la estimación"
+         aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress }}">
+      <div class="progress-bar" style="width: {{ progress }}%"></div>
+    </div>
+    <p class="progress-label">{{ progress }}% de la estimación invertido en enfoque</p>
+    {% endif %}
+  </section>
+
+  <aside class="detail-side">
+    <section class="card timer" id="timer" data-task-id="{{ task.id }}">
+      <h2>{{ ui.icon("target", "Sesión de enfoque") }}</h2>
+      <p class="timer-display" data-timer-display aria-live="off">00:00</p>
+      <p class="timer-state muted" data-timer-state>Listo para empezar</p>
+      <div class="timer-controls">
+        <button type="button" class="btn btn-primary" data-timer-start>{{ ui.icon("play", "Iniciar") }}</button>
+        <button type="button" class="btn" data-timer-pause hidden>{{ ui.icon("pause", "Pausar") }}</button>
+        <button type="button" class="btn" data-timer-reset>{{ ui.icon("reset", "Reiniciar") }}</button>
+        <button type="button" class="btn btn-success" data-timer-finish>{{ ui.icon("check", "Terminar y guardar") }}</button>
+      </div>
+      <noscript><p class="muted">El temporizador necesita JavaScript; puedes registrar los minutos a mano.</p></noscript>
+    </section>
+
+    <section class="card">
+      <h2>{{ ui.icon("clock", "Registrar enfoque") }}</h2>
+      <form id="focus-form" class="form-compact" method="post" action="{{ url_for('focus_add', task_id=task.id) }}">
+        <label class="field">
+          <span>Minutos</span>
+          <input id="focus-minutes" type="number" name="minutes" min="1" max="600" step="1" required placeholder="25">
+        </label>
+        <label class="field">
+          <span>Nota (opcional)</span>
+          <input id="focus-note" type="text" name="note" maxlength="200" placeholder="¿En qué avanzaste?">
+        </label>
+        <button class="btn btn-primary" type="submit">{{ ui.icon("plus", "Guardar sesión") }}</button>
+      </form>
+    </section>
+  </aside>
+</div>
+
+<section class="card history">
+  <h2>Historial de enfoque <span class="count">{{ logs|length }}</span></h2>
+  {% if logs %}
+  <ul class="log-list">
+    {% for log in logs %}
+    <li>
+      <span class="log-minutes">{{ log.minutes|minutes }}</span>
+      <span class="log-note">{{ log.note or "Sin nota" }}</span>
+      <time class="muted" datetime="{{ log.logged_at }}">{{ log.logged_at[:16] }}</time>
+      <form method="post" action="{{ url_for('focus_delete', log_id=log.id) }}" data-confirm="¿Eliminar esta sesión?">
+        <button class="btn btn-icon btn-ghost" type="submit" aria-label="Eliminar sesión" title="Eliminar sesión">{{ ui.icon("trash") }}</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Aún no hay sesiones. Inicia el temporizador o registra minutos manualmente.</p>
+  {% endif %}
+</section>
+{% endblock %}

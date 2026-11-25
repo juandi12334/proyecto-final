@@ -1,0 +1,26 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Reusable Jinja macros: SVG icons, badges and form-field errors. #}
+
+{% macro icon(name, label=None) -%}
+<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-{{ name }}"></use></svg>
+{%- if label %}<span>{{ label }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro priority_badge(priority) -%}
+<span class="badge priority-{{ priority }}" title="Prioridad">
+  <svg class="icon" aria-hidden="true"><use href="#i-flag"></use></svg>{{ PRIORITIES[priority] }}
+</span>
+{%- endmacro %}
+
+{% macro project_chip(name, color) -%}
+{% if name %}
+<span class="chip" style="--chip: {{ color }}"><span class="dot"></span>{{ name }}</span>
+{% else %}
+<span class="chip chip-empty">Sin proyecto</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro field_error(errors, field) -%}
+{% if errors and errors.get(field) %}<p class="field-error" role="alert">{{ errors[field] }}</p>{% endif %}
+{%- endmacro %}

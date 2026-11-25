@@ -1,0 +1,81 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Shared form for creating (task is None) and editing a task. #}
+{% extends "layout.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}{{ "Editar tarea" if task else "Nueva tarea" }}{% endblock %}
+
+{% block main %}
+<a class="back" href="{{ url_for('task_detail', task_id=task.id) if task else url_for('index') }}">{{ ui.icon("back", "Volver") }}</a>
+
+<form class="card form" method="post" novalidate
+      action="{{ url_for('task_edit', task_id=task.id) if task else url_for('task_new') }}">
+  <h1>{{ "Editar tarea" if task else "Nueva tarea" }}</h1>
+
+  <label class="field {{ 'has-error' if errors.title }}">
+    <span>Título <em>*</em></span>
+    <input type="text" name="title" value="{{ values.get('title', '') }}" maxlength="120" required autofocus
+           placeholder="Ej.: Grabar el video del proyecto">
+    {{ ui.field_error(errors, "title") }}
+  </label>
+
+  <label class="field {{ 'has-error' if errors.description }}">
+    <span>Descripción</span>
+    <textarea name="description" rows="4" maxlength="1000"
+              placeholder="Detalles, pasos o notas (opcional)">{{ values.get('description', '') }}</textarea>
+    {{ ui.field_error(errors, "description") }}
+  </label>
+
+  <div class="grid-2">
+    <label class="field {{ 'has-error' if errors.project_id }}">
+      <span>Proyecto</span>
+      <select name="project_id">
+        <option value="">Sin proyecto</option>
+        {% for project in projects %}
+        <option value="{{ project.id }}" {{ 'selected' if values.get('project_id')|string == project.id|string }}>{{ project.name }}</option>
+        {% endfor %}
+      </select>
+      {{ ui.field_error(errors, "project_id") }}
+      <small><a href="{{ url_for('projects') }}">Gestionar proyectos</a></small>
+    </label>
+
+    <label class="field {{ 'has-error' if errors.priority }}">
+      <span>Prioridad</span>
+      <select name="priority">
+        {% for value, label in PRIORITIES.items() %}
+        <option value="{{ value }}" {{ 'selected' if values.get('priority')|string == value|string }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {{ ui.field_error(errors, "priority") }}
+    </label>
+
+    <label class="field {{ 'has-error' if errors.status }}">
+      <span>Estado</span>
+      <select name="status">
+        {% for value, label in STATUSES.items() %}
+        <option value="{{ value }}" {{ 'selected' if values.get('status') == value }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      {{ ui.field_error(errors, "status") }}
+    </label>
+
+    <label class="field {{ 'has-error' if errors.due_date }}">
+      <span>Fecha límite</span>
+      <input type="date" name="due_date" value="{{ values.get('due_date', '') }}">
+      {{ ui.field_error(errors, "due_date") }}
+    </label>
+
+    <label class="field {{ 'has-error' if errors.estimate_minutes }}">
+      <span>Estimación (minutos)</span>
+      <input type="number" name="estimate_minutes" min="1" max="10000" step="1"
+             value="{{ values.get('estimate_minutes', '') }}" placeholder="Ej.: 90">
+      {{ ui.field_error(errors, "estimate_minutes") }}
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">{{ ui.icon("save", "Guardar cambios" if task else "Crear tarea") }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('task_detail', task_id=task.id) if task else url_for('index') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

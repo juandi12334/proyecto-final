@@ -1,0 +1,88 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Home page: progress summary, live filters and the three-column board. #}
+{% extends "layout.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Tablero{% endblock %}
+
+{% block main %}
+<section class="summary" aria-label="Resumen de progreso">
+  <div class="summary-progress card">
+    <div class="summary-head">
+      <h1>Tu progreso</h1>
+      <span class="muted"><strong data-stat="done">{{ summary.done }}</strong> de <strong data-stat="total">{{ summary.total }}</strong> completadas</span>
+    </div>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ summary.percent }}">
+      <div class="progress-bar" data-progress style="width: {{ summary.percent }}%"></div>
+    </div>
+    <p class="progress-label"><span data-stat="percent">{{ summary.percent }}</span>% del total</p>
+
+    <div class="week" aria-label="Minutos de enfoque en los últimos 7 días">
+      {% for day in week %}
+      <div class="week-day" title="{{ day.day }}: {{ day.minutes|minutes }}">
+        <div class="week-bar-wrap"><div class="week-bar" style="height: {{ day.height }}%"></div></div>
+        <span>{{ day.label }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat card"><span class="stat-label">Pendientes</span><span class="stat-value" data-stat="pending">{{ summary.pending }}</span></div>
+    <div class="stat card"><span class="stat-label">En progreso</span><span class="stat-value" data-stat="in_progress">{{ summary.in_progress }}</span></div>
+    <div class="stat card"><span class="stat-label">Vencidas</span><span class="stat-value {{ 'text-danger' if summary.overdue }}" data-stat="overdue">{{ summary.overdue }}</span></div>
+    <div class="stat card"><span class="stat-label">{{ ui.icon("clock") }} Enfoque hoy</span><span class="stat-value" data-stat="focus_today">{{ summary.focus_today }}</span></div>
+    <div class="stat card"><span class="stat-label">Enfoque total</span><span class="stat-value" data-stat="focus_total">{{ summary.focus_total }}</span></div>
+  </div>
+</section>
+
+<form id="filters" class="filters card" method="get" action="{{ url_for('index') }}"
+      data-board-url="{{ url_for('board_fragment') }}" role="search">
+  <label class="search">
+    {{ ui.icon("search") }}
+    <span class="sr-only">Buscar</span>
+    <input type="search" name="q" value="{{ filters.q }}" placeholder="Buscar por título, descripción o proyecto…"
+           maxlength="100" autocomplete="off">
+  </label>
+
+  <label class="filter">
+    <span>Estado</span>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for value, label in STATUSES.items() %}
+      <option value="{{ value }}" {{ 'selected' if filters.status == value }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label class="filter">
+    <span>Prioridad</span>
+    <select name="priority">
+      <option value="">Todas</option>
+      {% for value, label in PRIORITIES.items() %}
+      <option value="{{ value }}" {{ 'selected' if filters.priority == value }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label class="filter">
+    <span>Proyecto</span>
+    <select name="project">
+      <option value="">Todos</option>
+      <option value="none" {{ 'selected' if filters.project == 'none' }}>Sin proyecto</option>
+      {% for project in projects %}
+      <option value="{{ project.id }}" {{ 'selected' if filters.project == project.id|string }}>{{ project.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <div class="filter-actions">
+    <noscript><button class="btn" type="submit">{{ ui.icon("search", "Filtrar") }}</button></noscript>
+    <a class="btn btn-ghost" href="{{ url_for('index') }}" data-clear-filters>{{ ui.icon("x", "Limpiar") }}</a>
+  </div>
+</form>
+
+<div id="board" aria-live="polite">
+  {% include "_board.html" %}
+</div>
+{% endblock %}

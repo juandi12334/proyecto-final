@@ -1,0 +1,64 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Board fragment: rendered inside index.html and also returned alone by
+   /tasks/board so app.js can refresh it while the user filters. #}
+{% import "_macros.html" as ui with context %}
+<p class="board-count muted">
+  {{ count }} tarea{{ '' if count == 1 else 's' }}
+  {% if filters.q or filters.status or filters.priority or filters.project %} coinciden con los filtros{% endif %}
+</p>
+
+<div class="board">
+  {% for status, label in STATUSES.items() %}
+  <section class="column column-{{ status }}" aria-labelledby="col-{{ status }}">
+    <header class="column-head">
+      <h2 id="col-{{ status }}">{{ label }}</h2>
+      <span class="count">{{ board[status]|length }}</span>
+    </header>
+
+    {% for task in board[status] %}
+    {% set due_label, due_class = due_info(task.due_date, task.status) %}
+    <article class="task-card {{ due_class }}" data-task-id="{{ task.id }}">
+      <a class="task-title" href="{{ url_for('task_detail', task_id=task.id) }}">{{ task.title }}</a>
+
+      <div class="task-meta">
+        {{ ui.project_chip(task.project_name, task.project_color) }}
+        {{ ui.priority_badge(task.priority) }}
+        {% if due_label %}<span class="badge badge-due">{{ ui.icon("calendar") }}{{ due_label }}</span>{% endif %}
+        {% if task.focus_minutes %}<span class="badge">{{ ui.icon("clock") }}{{ task.focus_minutes|minutes }}</span>{% endif %}
+      </div>
+
+      <form class="quick" method="post" action="{{ url_for('task_quick_update', task_id=task.id) }}" data-quick>
+        <input type="hidden" name="next" value="{{ url_for('index') }}">
+        <label>
+          <span class="sr-only">Estado de {{ task.title }}</span>
+          <select name="status">
+            {% for value, text in STATUSES.items() %}
+            <option value="{{ value }}" {{ 'selected' if task.status == value }}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span class="sr-only">Prioridad de {{ task.title }}</span>
+          <select name="priority">
+            {% for value, text in PRIORITIES.items() %}
+            <option value="{{ value }}" {{ 'selected' if task.priority == value }}>{{ text }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <noscript><button class="btn btn-sm" type="submit">{{ ui.icon("save", "Guardar") }}</button></noscript>
+      </form>
+    </article>
+    {% else %}
+    <p class="empty">Sin tareas aquí.</p>
+    {% endfor %}
+  </section>
+  {% endfor %}
+</div>
+
+{% if count == 0 and not (filters.q or filters.status or filters.priority or filters.project) %}
+<div class="card empty-state">
+  <p>Todavía no tienes tareas. ¡Crea la primera para empezar!</p>
+  <a class="btn btn-primary" href="{{ url_for('task_new') }}">{{ ui.icon("plus", "Nueva tarea") }}</a>
+</div>
+{% endif %}

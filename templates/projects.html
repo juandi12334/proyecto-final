@@ -1,0 +1,55 @@
+{# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+   development assistant to help write this file.
+   Project (label) management: create, list with progress, delete. #}
+{% extends "layout.html" %}
+{% import "_macros.html" as ui with context %}
+{% block title %}Proyectos{% endblock %}
+
+{% block main %}
+<div class="detail">
+  <section class="card detail-main">
+    <h1>Proyectos</h1>
+    {% if projects %}
+    <ul class="project-list">
+      {% for project in projects %}
+      {% set pct = (project.done * 100 / project.total)|round|int if project.total else 0 %}
+      <li>
+        <div class="project-info">
+          {{ ui.project_chip(project.name, project.color) }}
+          <span class="muted">{{ project.done }}/{{ project.total }} completadas</span>
+        </div>
+        <div class="progress progress-thin"><div class="progress-bar" style="width: {{ pct }}%; background: {{ project.color }}"></div></div>
+        <div class="project-actions">
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('index', project=project.id) }}">{{ ui.icon("board", "Ver tareas") }}</a>
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('task_new', project=project.id) }}">{{ ui.icon("plus", "Tarea") }}</a>
+          <form method="post" action="{{ url_for('project_delete', project_id=project.id) }}"
+                data-confirm="¿Eliminar «{{ project.name }}»? Sus tareas NO se borran: quedan sin proyecto.">
+            <button class="btn btn-sm btn-danger" type="submit">{{ ui.icon("trash", "Eliminar") }}</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted">Aún no hay proyectos. Crea uno para agrupar tus tareas.</p>
+    {% endif %}
+  </section>
+
+  <aside class="detail-side">
+    <form class="card form-compact" method="post" action="{{ url_for('projects') }}" novalidate>
+      <h2>{{ ui.icon("folder", "Nuevo proyecto") }}</h2>
+      <label class="field {{ 'has-error' if errors.name }}">
+        <span>Nombre <em>*</em></span>
+        <input type="text" name="name" maxlength="40" required value="{{ values.get('name', '') }}" placeholder="Ej.: Universidad">
+        {{ ui.field_error(errors, "name") }}
+      </label>
+      <label class="field {{ 'has-error' if errors.color }}">
+        <span>Color</span>
+        <input type="color" name="color" value="{{ values.get('color', '#7f9cc2') }}">
+        {{ ui.field_error(errors, "color") }}
+      </label>
+      <button class="btn btn-primary" type="submit">{{ ui.icon("plus", "Crear proyecto") }}</button>
+    </form>
+  </aside>
+</div>
+{% endblock %}

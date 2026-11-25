@@ -1,0 +1,34 @@
+# AI citation (CS50x Final Project): Claude by Anthropic was used as a
+# development assistant to help write this file.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Secrets and local config
+.env
+.flaskenv
+instance/
+
+# Local database (re-created automatically from schema.sql)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Editors / OS / temp files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*~
