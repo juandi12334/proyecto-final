@@ -1,5 +1,5 @@
--- AI citation (CS50x Final Project): Claude by Anthropic was used as a
--- development assistant to help write this file.
+-- AI citation (CS50x Final Project): Claude (Anthropic) and ChatGPT (OpenAI)
+-- were used as development assistants during the creation of this project.
 --
 -- Optional demo data for FocusBoard. Dates are relative to "today" so the
 -- board always looks realistic (some tasks due soon, one overdue, etc.).

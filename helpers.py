@@ -1,5 +1,5 @@
-# AI citation (CS50x Final Project): Claude by Anthropic was used as a
-# development assistant to help write this file.
+# AI citation (CS50x Final Project): Claude (Anthropic) and ChatGPT (OpenAI) were used as
+# development assistants during the creation of this project.
 """Constants, input validation and small formatting helpers for FocusBoard.
 
 Keeping validation here (instead of inside the routes) makes app.py shorter

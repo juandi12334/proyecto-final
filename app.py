@@ -1,5 +1,5 @@
-# AI citation (CS50x Final Project): Claude by Anthropic was used as a
-# development assistant to help write this file.
+# AI citation (CS50x Final Project): Claude (Anthropic) and ChatGPT (OpenAI) were used as
+# development assistants during the creation of this project.
 """FocusBoard - a task manager organised in focus blocks (CS50x Final Project).
 
 Routes (all HTML forms work without JavaScript; JS only makes them faster):
